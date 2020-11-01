@@ -1,0 +1,77 @@
+﻿@page "/platecalc"
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@inject IJSRuntime JSRuntime;
+
+<div class="card m-3">
+    <h4 class="card-header">LBS Plate Calculator</h4>
+    <div class="card-body">
+        <EditForm EditContext="@editContext" OnValidSubmit="HandleValidSubmit" @onreset="HandleReset">
+            <DataAnnotationsValidator />
+            <div class="form-row">
+                <div class="form-group col">
+                    <label>Plate Size</label>
+                    <InputSelect @bind-Value="model.PlateSize" class="form-control">
+                        <option value=""></option>
+                        <option value="45">45</option>
+                        <option value="35">35</option>
+                        <option value="25">25</option>
+                        <option value="10">10</option>
+                        <option value="5">5</option>
+                        <option value="2.5"></option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => model.PlateSize)" />
+                </div>
+                <div class="form-group col-5">
+                    <label>Count</label>
+                    <InputText @bind-Value="model.Count" class="form-control" />
+                    <ValidationMessage For="@(() => model.Count)" />
+                </div>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary mr-1">Register</button>
+                <button type="reset" class="btn btn-secondary">Cancel</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private PlateModel model = new PlateModel();
+    private EditContext editContext;
+    private int theBar = 45;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(model);
+    }
+
+    private void HandleValidSubmit()
+    {
+        var modelJson = JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = true });
+
+        var weight = theBar + (int.Parse(model.PlateSize) * int.Parse(model.Count));
+
+        JSRuntime.InvokeVoidAsync("alert", $"SUCCESS!! :-)\n\n{weight}");
+    }
+
+    private void HandleReset()
+    {
+        model = new PlateModel();
+        editContext = new EditContext(model);
+    }
+
+    private class PlateModel
+    {
+        [Required]
+        [Display(Name = "Plate Size")]
+        public string PlateSize { get; set; }
+
+        [Required]
+        [Display(Name = "Plate Count")]
+        public string Count { get; set; }
+
+        public decimal Amount { get; set; }
+    }
+}
